@@ -1,3 +1,4 @@
+// File is used to do health check of the backend
 import { Router } from "express";
 
 const router = Router();
