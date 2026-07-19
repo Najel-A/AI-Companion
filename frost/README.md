@@ -40,3 +40,25 @@ Frost is designed as a distributed full-stack AI application with a dedicated ap
        - Settings
        - Projects
        - Achievements
+
+# Backend Structure
+backend/
+
+├── server.ts          <-- starts application
+
+├── src/
+│   ├── app.ts         <-- Express setup
+│   │
+│   ├── config/
+│   │   └── db.ts
+│   │
+│   ├── controllers/
+│   │
+│   ├── routes/
+│   │
+│   ├── services/
+│   │
+│   └── ...
+│
+├── package.json
+└── tsconfig.json
