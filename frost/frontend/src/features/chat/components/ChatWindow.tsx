@@ -32,7 +32,6 @@ export function ChatWindow() {
     try {
       await sendMessage({
         conversationId: selectedId,
-        role: "user",
         content,
       }).unwrap();
     } catch (error) {

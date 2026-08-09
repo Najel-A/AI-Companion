@@ -3,7 +3,7 @@ export type Message = {
   role: string;
   content: string;
   createdAt: string;
-  conversationId: string;
+  //conversationId: string;
 };
 
 export type Conversation = {
@@ -11,7 +11,7 @@ export type Conversation = {
   title: string;
   createdAt: string;
   updatedAt: string;
-  messages?: Message[];
+  messages: Message[];
 };
 
 export type SendMessageResponse = {
