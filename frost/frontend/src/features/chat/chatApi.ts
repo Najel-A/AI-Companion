@@ -1,5 +1,5 @@
 import { api } from "../../services/api";
-import type { Conversation, Message } from "./types";
+import type { Conversation, Message, SendMessageResponse } from "./types";
 
 export const chatApi = api.injectEndpoints({
   endpoints: (builder) => ({
@@ -55,6 +55,20 @@ export const chatApi = api.injectEndpoints({
         { type: "Conversation", id: "LIST" },
       ],
     }),
+    sendMessage: builder.mutation<
+      SendMessageResponse,
+      { conversationId: string; role: string; content: string }
+    >({
+      query: ({ conversationId, content }) => ({
+        url: `/api/conversations/${conversationId}/messages`,
+        method: "POST",
+        body: { content },
+      }),
+      invalidatesTags: (_result, _error, { conversationId }) => [
+        { type: "ConversationDetail", id: conversationId },
+        { type: "Conversation", id: "LIST" },
+      ],
+    }),
   }),
 });
 
@@ -64,4 +78,5 @@ export const {
   useCreateConversationMutation,
   useDeleteConversationMutation,
   useAddMessageMutation,
+  useSendMessageMutation
 } = chatApi;

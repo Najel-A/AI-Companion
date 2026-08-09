@@ -2,7 +2,7 @@ import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import { useAppSelector } from "../../../hooks/redux";
 import { Button } from "../../../components/ui/Button";
 import {
-  useAddMessageMutation,
+  useSendMessageMutation,
   useGetConversationQuery,
 } from "../chatApi";
 
@@ -12,7 +12,7 @@ export function ChatWindow() {
     selectedId ?? "",
     { skip: !selectedId }
   );
-  const [addMessage, { isLoading: isSending }] = useAddMessageMutation();
+  const [sendMessage, { isLoading: isSending }] = useSendMessageMutation();
   const [draft, setDraft] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -22,14 +22,22 @@ export function ChatWindow() {
 
   async function handleSubmit(event?: FormEvent) {
     event?.preventDefault();
-    if (!selectedId || !draft.trim()) return;
-
-    await addMessage({
-      conversationId: selectedId,
-      role: "user",
-      content: draft.trim(),
-    }).unwrap();
+  
+    if (!selectedId || !draft.trim() || isSending) return;
+  
+    const content = draft.trim();
+  
     setDraft("");
+  
+    try {
+      await sendMessage({
+        conversationId: selectedId,
+        role: "user",
+        content,
+      }).unwrap();
+    } catch (error) {
+      console.error("Failed to send message:", error);
+    }
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
@@ -82,6 +90,7 @@ export function ChatWindow() {
         )}
 
         {conversation?.messages?.map((message) => (
+          
           <article
             key={message.id}
             className={`animate-fadeIn max-w-2xl rounded-2xl px-5 py-4 shadow-soft ${
@@ -98,6 +107,27 @@ export function ChatWindow() {
             </p>
           </article>
         ))}
+
+        {isSending && (
+            <article className="animate-fadeIn max-w-2xl rounded-2xl bg-white/90 px-5 py-4 text-frost-900 shadow-soft">
+              <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-frost-500">
+                Frost
+              </p>
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-frost-500">
+                  Thinking
+                </span>
+
+                <div className="flex gap-1">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-frost-400" />
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-frost-400 [animation-delay:150ms]" />
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-frost-400 [animation-delay:300ms]" />
+                </div>
+              </div>
+            </article>
+          )}
+        
         <div ref={bottomRef} />
       </div>
 
