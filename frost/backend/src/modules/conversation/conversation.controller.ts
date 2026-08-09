@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import * as conversationService from "./conversation.service";
-import * as chatService from "../chat/chat.service";
 
 export async function create(req: Request, res: Response) {
   try {
@@ -51,30 +50,29 @@ export async function remove(req: Request, res: Response) {
 
 export async function addMessage(req: Request, res: Response) {
   try {
-    const { role, content } = req.body;
-    if (typeof role !== "string" || typeof content !== "string") {
-      return res.status(400).json({ error: "Role and content must be strings" });
+    const { content } = req.body;
+
+    if (typeof content !== "string" || !content.trim()) {
+      return res.status(400).json({
+        error: "Content is required",
+      });
     }
 
-    // Adds user's message to the conversation
-    const userMessage = await conversationService.addMessage(
+    const result = await conversationService.addMessage(
       req.params.id,
-      role,
       content
     );
 
-    // Wait reply from AI service
-    const reply = await chatService.generateReply(content);
-    const assistantMessage = await conversationService.addMessage(
-      req.params.id,
-      "assistant",
-      reply
-    );
-    console.log(userMessage, assistantMessage);
-    return res.status(201).json({ userMessage, assistantMessage });
+    return res.status(201).json(result);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    const status = message === "Conversation not found" ? 404 : 400;
-    return res.status(status).json({ error: message });
+    const message =
+      error instanceof Error ? error.message : "Unknown error";
+
+    const status =
+      message === "Conversation not found" ? 404 : 500;
+
+    return res.status(status).json({
+      error: message,
+    });
   }
 }

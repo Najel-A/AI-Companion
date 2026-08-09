@@ -1,7 +1,9 @@
 import * as conversationRepository from "./conversation.repository";
+import * as chatService from "../chat/chat.service";
 
 export async function createConversation(title: string) {
   const trimmed = title.trim();
+
   if (!trimmed) {
     throw new Error("Title is required");
   }
@@ -15,6 +17,7 @@ export async function listConversations() {
 
 export async function getConversation(id: string) {
   const conversation = await conversationRepository.findById(id);
+
   if (!conversation) {
     throw new Error("Conversation not found");
   }
@@ -24,26 +27,42 @@ export async function getConversation(id: string) {
 
 export async function deleteConversation(id: string) {
   await getConversation(id);
+
   return conversationRepository.remove(id);
 }
 
 export async function addMessage(
   conversationId: string,
-  role: string,
   content: string
 ) {
+  // Make sure the conversation exists
   await getConversation(conversationId);
 
-  const trimmedRole = role.trim();
   const trimmedContent = content.trim();
 
-  if (!trimmedRole || !trimmedContent) {
-    throw new Error("Role and content are required");
+  if (!trimmedContent) {
+    throw new Error("Message content is required");
   }
 
-  return conversationRepository.createMessage(
+  // Save user's message
+  const userMessage = await conversationRepository.createMessage(
     conversationId,
-    trimmedRole,
+    "user",
     trimmedContent
   );
+
+  // Generate Frost's response
+  const reply = await chatService.generateReply(trimmedContent);
+
+  // Save Frost's response
+  const assistantMessage = await conversationRepository.createMessage(
+    conversationId,
+    "assistant",
+    reply
+  );
+
+  return {
+    userMessage,
+    assistantMessage,
+  };
 }
