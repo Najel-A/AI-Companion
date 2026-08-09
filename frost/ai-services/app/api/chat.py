@@ -23,5 +23,5 @@ def health() -> HealthResponse:
 
 @router.post("/chat", response_model=ChatResponse)
 def chat(payload: ChatRequest) -> ChatResponse:
-    """Accept a user message and return a mocked AI response (no Ollama yet)."""
+    """Accept a user message and return an AI response"""
     return ollama_service.generate_chat_response(payload)

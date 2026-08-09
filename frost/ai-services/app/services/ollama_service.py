@@ -1,21 +1,30 @@
-"""Ollama client placeholder.
+"""Service for communicating with the local Ollama instance."""
 
-Real Ollama HTTP calls will live here later. For now the service returns a mock reply
-so the FastAPI layer and contract can be developed independently.
-"""
+from ollama import chat
 
 from app.models.requests import ChatRequest
 from app.models.responses import ChatResponse
 
 
 class OllamaService:
-    """Business logic for chat generation."""
+    """Business logic for generating AI responses through Ollama."""
 
     def generate_chat_response(self, payload: ChatRequest) -> ChatResponse:
-        """Return a mocked AI response without calling Ollama."""
-        # Intentionally unused until Ollama is wired up.
-        _ = payload.message
-        return ChatResponse(response="AI service is connected.")
+        """Generate a response using the configured Ollama model."""
+
+        response = chat(
+            model="qwen3:8b",
+            messages=[
+                {
+                    "role": "user",
+                    "content": payload.message,
+                }
+            ],
+        )
+
+        return ChatResponse(
+            response=response["message"]["content"]
+        )
 
 
 ollama_service = OllamaService()

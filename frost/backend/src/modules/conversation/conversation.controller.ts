@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import * as conversationService from "./conversation.service";
+import * as chatService from "../chat/chat.service";
 
 export async function create(req: Request, res: Response) {
   try {
@@ -55,12 +56,22 @@ export async function addMessage(req: Request, res: Response) {
       return res.status(400).json({ error: "Role and content must be strings" });
     }
 
-    const message = await conversationService.addMessage(
+    // Adds user's message to the conversation
+    const userMessage = await conversationService.addMessage(
       req.params.id,
       role,
       content
     );
-    return res.status(201).json(message);
+
+    // Wait reply from AI service
+    const reply = await chatService.generateReply(content);
+    const assistantMessage = await conversationService.addMessage(
+      req.params.id,
+      "assistant",
+      reply
+    );
+    console.log(userMessage, assistantMessage);
+    return res.status(201).json({ userMessage, assistantMessage });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     const status = message === "Conversation not found" ? 404 : 400;
